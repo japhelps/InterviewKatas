@@ -5,6 +5,9 @@ using SnackShack.Api.Data;
 
 namespace SnackShack.Model
 {
+	/// <summary>
+	/// Represents the sandwich menu item.
+	/// </summary>
 	public class Sandwich : IMenuItem
 	{
 		#region Private Members
@@ -12,6 +15,11 @@ namespace SnackShack.Model
 		#endregion
 
 		#region Constructors
+		/// <summary>
+		/// Creates an instance of a sandwich.
+		/// </summary>
+		/// <param name="name">The name of the sandwich.</param>
+		/// <param name="position">The position of the sandwich.</param>
 		public Sandwich(string name, int position)
 		{
 			if (string.IsNullOrWhiteSpace(name))
@@ -28,12 +36,16 @@ namespace SnackShack.Model
 		#endregion
 
 		#region Public Properties
+		/// <inheritdoc/>
 		public string Name { get; }
+		/// <inheritdoc/>
 		public int PlaceInLine { get; }
+		/// <inheritdoc/>
 		public bool StepsComplete => this.steps.Count == 0;
 		#endregion
 
 		#region Public Methods
+		/// <inheritdoc/>
 		public IStep GetNextStep()
 		{
 			return this.steps.Dequeue();

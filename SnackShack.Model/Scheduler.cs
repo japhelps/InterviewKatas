@@ -8,6 +8,9 @@ using SnackShack.Api.Data;
 
 namespace SnackShack.Model
 {
+	/// <summary>
+	/// Represents a work item scheduling system.
+	/// </summary>
 	public class Scheduler : IScheduler
 	{
 		#region Private Members
@@ -15,6 +18,7 @@ namespace SnackShack.Model
 		#endregion
 
 		#region Public Methods
+		/// <inheritdoc/>
 		public ISchedule Create(IEnumerable<IOrder> orders)
 		{
 			var tasks = new List<Task>();

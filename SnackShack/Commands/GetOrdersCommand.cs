@@ -6,8 +6,15 @@ using SnackShack.Model;
 
 namespace SnackShack.Commands
 {
+	/// <summary>
+	/// Represents a command to get the orders.
+	/// </summary>
 	internal class GetOrdersCommand : CommandBase<IEnumerable<IOrder>>
 	{
+		/// <summary>
+		/// Gets the orders from the customers.
+		/// </summary>
+		/// <returns>The orders from the customer.</returns>
 		public override IEnumerable<IOrder> Execute()
 		{
 			var orders = new List<IOrder>();
