@@ -40,7 +40,7 @@ namespace SnackShack.Model
 
         #region Public Methods
         /// <inheritdoc/>
-        public ISchedule Create(IEnumerable<IOrder> orders)
+        public ISchedule Create()
         {
             var tasks = new List<Task>();
 
