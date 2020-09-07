@@ -82,46 +82,6 @@ namespace SnackShack.Model
             return new Schedule(tasks);
         }
 
-        ///// <inheritdoc/>
-        //public ISchedule Create()
-        //{
-        //    var tasks = new List<Task>();
-
-        //    var grouped = this.OrdersInternal.GroupBy(x => new { x.Placed, x.Item })
-        //        .Select(x => new { Placed = x.Key.Placed, Type = x.Key.Item, Orders = x.ToList() })
-        //        .ToList();
-
-        //    var currentTime = TimeSpan.Zero;
-        //    var builder = new StringBuilder();
-        //    foreach (var order in this.OrdersInternal)
-        //    {
-        //        while (!order.StepsComplete)
-        //        {
-        //            builder.Clear();
-        //            if (grouped.Any(x => x.Placed == currentTime))
-        //            {
-        //                var ordersMadeDescription = grouped.Where(x => x.Placed == currentTime)
-        //                    .Select(x => $"{x.Orders.Count} {x.Type} orders placed")
-        //                    .Aggregate((s1, s2) => $"{s1}, {s2}");
-        //                builder.Append(ordersMadeDescription);
-        //            }
-
-        //            if (builder.Length > 0)
-        //                builder.Append(", ");
-
-        //            var step = order.GetNextStep();
-
-        //            builder.Append(step.Name);
-        //            tasks.Add(new Task(builder.ToString(), currentTime));
-
-        //            currentTime = currentTime.Add(step.TimeToComplete);
-        //        }
-        //    }
-
-        //    tasks.Add(new Task(FINAL_TASK_NAME, currentTime));
-        //    return new Schedule(tasks);
-        //}
-
         /// <inheritdoc/>
         public void Add(IOrder order)
         {
