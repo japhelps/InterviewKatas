@@ -15,9 +15,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GildedRoseProjects", "Gilde
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SnackShackArea", "SnackShackArea", "{BE567949-4F40-4F9D-880B-7956DE66CD6D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SnackShack.Api", "SnackShack.Api\SnackShack.Api.csproj", "{4A7A8D73-9A79-44EF-9E82-022F3FE45919}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SnackShack.Api", "SnackShack.Api\SnackShack.Api.csproj", "{4A7A8D73-9A79-44EF-9E82-022F3FE45919}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SnackShack.Model", "SnackShack.Model\SnackShack.Model.csproj", "{EDA3738C-D50F-4EFC-B714-692C99527714}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SnackShack.Model", "SnackShack.Model\SnackShack.Model.csproj", "{EDA3738C-D50F-4EFC-B714-692C99527714}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SnackShack.Tests", "SnackShack.Tests\SnackShack.Tests.csproj", "{6FFA0021-9D08-4838-A9DD-33ABA0DB8352}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,6 +51,10 @@ Global
 		{EDA3738C-D50F-4EFC-B714-692C99527714}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EDA3738C-D50F-4EFC-B714-692C99527714}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EDA3738C-D50F-4EFC-B714-692C99527714}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6FFA0021-9D08-4838-A9DD-33ABA0DB8352}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6FFA0021-9D08-4838-A9DD-33ABA0DB8352}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6FFA0021-9D08-4838-A9DD-33ABA0DB8352}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6FFA0021-9D08-4838-A9DD-33ABA0DB8352}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -60,6 +66,7 @@ Global
 		{A1CC1DD2-0888-4CB3-8B07-94B25B61C68D} = {51D6887B-145E-4052-BEF4-878F2EEBC974}
 		{4A7A8D73-9A79-44EF-9E82-022F3FE45919} = {BE567949-4F40-4F9D-880B-7956DE66CD6D}
 		{EDA3738C-D50F-4EFC-B714-692C99527714} = {BE567949-4F40-4F9D-880B-7956DE66CD6D}
+		{6FFA0021-9D08-4838-A9DD-33ABA0DB8352} = {BE567949-4F40-4F9D-880B-7956DE66CD6D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E39BA2FA-AE08-46EC-A6F0-4DE91B2D8E86}

@@ -34,7 +34,7 @@ namespace SnackShack.Commands
 					for (int i = 0; i < numberOfOrders; i++)
 					{
 						var position = currentOrderCount + i + 1;
-						orders.Add(new Order(new Sandwich($"sandwich", position), placed));
+						orders.Add(new SandwichOrder(placed));
 					}
 				}
 			}

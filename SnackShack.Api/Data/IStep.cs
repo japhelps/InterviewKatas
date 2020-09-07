@@ -13,10 +13,12 @@ namespace SnackShack.Api.Data
 		/// Gets the name of the step.
 		/// </summary>
 		string Name { get; }
+
 		/// <summary>
 		/// Gets the amount of time it takes to complete the step.
 		/// </summary>
 		TimeSpan TimeToComplete { get; }
+
 		/// <summary>
 		/// Gets a weighted amount of how long a step will take.
 		/// </summary>
