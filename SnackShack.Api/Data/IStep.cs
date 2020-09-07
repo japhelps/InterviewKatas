@@ -4,9 +4,9 @@ using System.Text;
 
 namespace SnackShack.Api.Data
 {
-	public interface IOrder
+	public interface IStep
 	{
-		IMenuItem Item { get; }
-		TimeSpan Placed { get; }
+		string Name { get; }
+		TimeSpan TimeToComplete { get; }
 	}
 }
