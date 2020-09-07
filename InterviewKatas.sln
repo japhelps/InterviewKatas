@@ -21,6 +21,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SnackShack.Model", "SnackSh
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SnackShack.Tests", "SnackShack.Tests\SnackShack.Tests.csproj", "{6FFA0021-9D08-4838-A9DD-33ABA0DB8352}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SnackShack.Extensions", "SnackShack.Extensions\SnackShack.Extensions.csproj", "{4288EE47-595A-4E2F-A708-29290B156453}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,10 @@ Global
 		{6FFA0021-9D08-4838-A9DD-33ABA0DB8352}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6FFA0021-9D08-4838-A9DD-33ABA0DB8352}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6FFA0021-9D08-4838-A9DD-33ABA0DB8352}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4288EE47-595A-4E2F-A708-29290B156453}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4288EE47-595A-4E2F-A708-29290B156453}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4288EE47-595A-4E2F-A708-29290B156453}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4288EE47-595A-4E2F-A708-29290B156453}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -67,6 +73,7 @@ Global
 		{4A7A8D73-9A79-44EF-9E82-022F3FE45919} = {BE567949-4F40-4F9D-880B-7956DE66CD6D}
 		{EDA3738C-D50F-4EFC-B714-692C99527714} = {BE567949-4F40-4F9D-880B-7956DE66CD6D}
 		{6FFA0021-9D08-4838-A9DD-33ABA0DB8352} = {BE567949-4F40-4F9D-880B-7956DE66CD6D}
+		{4288EE47-595A-4E2F-A708-29290B156453} = {BE567949-4F40-4F9D-880B-7956DE66CD6D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E39BA2FA-AE08-46EC-A6F0-4DE91B2D8E86}
