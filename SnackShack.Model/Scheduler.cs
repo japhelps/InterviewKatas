@@ -53,7 +53,7 @@ namespace SnackShack.Model
             {
                 builder.Clear();
                 var placedOrders = bin.Items.Where(x => x.Step is PlaceOrderStep)
-                    .GroupBy(x => new { Type = x.Order.Item, OrderStep = x })
+                    .GroupBy(x => new { Type = x.Order.Item })
                     .Select(x => new { Type = x.Key.Type, OrderSteps = x.ToList() });
                 if (placedOrders.Count() > 0)
                 {
