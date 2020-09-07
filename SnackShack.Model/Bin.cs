@@ -13,6 +13,10 @@ namespace SnackShack.Model
     /// </summary>
     internal class Bin
     {
+        #region Private Members
+        private List<OrderStep> items;
+        #endregion
+
         #region Constructors
         /// <summary>
         /// Creates an instance of a bin to hold menu item production steps.
@@ -24,6 +28,7 @@ namespace SnackShack.Model
                 throw new ArgumentOutOfRangeException(nameof(capacity), capacity, "Capacity must be greater than zero.");
 
             this.Capacity = capacity;
+            this.items = new List<OrderStep>();
         }
         #endregion
 
@@ -35,18 +40,23 @@ namespace SnackShack.Model
         /// <summary>
         /// Gets the current capacity of the items being held.
         /// </summary>
-        public int CurrentCapacity => this.Items.Sum(x => x.Step.Weight);
+        public int CurrentCapacity => this.items.Sum(x => x.Step.Weight);
 
         /// <summary>
         /// Gets the amount of capacity remaining in the bin.
         /// </summary>
-        public int CapacityRemaining => this.Capacity - this.Items.Sum(x => x.Step.Weight);
+        public int CapacityRemaining => this.Capacity - this.items.Sum(x => x.Step.Weight);
 
         /// <summary>
         /// Gets the total time used in this bin.
         /// </summary>
-        public TimeSpan TimeUsed => this.Items.Select(x => x.Step.TimeToComplete)
+        public TimeSpan TimeUsed => this.items.Select(x => x.Step.TimeToComplete)
             .Aggregate((ts1, ts2) => ts1.Add(ts2));
+
+        /// <summary>
+        /// Gets the items in the bin.
+        /// </summary>
+        public IReadOnlyList<OrderStep> Items => this.items;
         #endregion
 
         #region Public Methods
@@ -60,7 +70,7 @@ namespace SnackShack.Model
             if (item.Step.Weight > this.CapacityRemaining)
                 return false;
 
-            this.Items.Add(item);
+            this.items.Add(item);
             return true;
         }
 
@@ -70,11 +80,7 @@ namespace SnackShack.Model
         /// <param name="order">The order for which to check.</param>
         /// <param name="step">The step for which to check.</param>
         /// <returns><see langword="true"/> if the order and step are found, otherwise <see langword="false"/>.</returns>
-        public bool Contains(IOrder order, IStep step) => this.Items.Contains(new OrderStep(order, step));
-        #endregion
-
-        #region Private Properties
-        private List<OrderStep> Items { get; } = new List<OrderStep>();
+        public bool Contains(IOrder order, IStep step) => this.items.Contains(new OrderStep(order,step));
         #endregion
     }
 }

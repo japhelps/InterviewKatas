@@ -21,6 +21,7 @@ namespace SnackShack.Model
 
         public IOrder Order { get; }
         public IStep Step { get; }
+        public string Description => $"{this.Step.Name} {this.Order.Position}";
 
 
         #region Comparison Methods

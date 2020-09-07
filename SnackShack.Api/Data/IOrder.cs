@@ -25,14 +25,8 @@ namespace SnackShack.Api.Data
 		IReadOnlyCollection<IStep> Steps { get; }
 
 		/// <summary>
-		/// Gets whether the production of the order is finished.
+		/// Gets or sets the position of the order.
 		/// </summary>
-		bool StepsComplete { get; }
-
-		/// <summary>
-		/// Gets the next step in the production of the item.
-		/// </summary>
-		/// <returns>The next step in the production process, otherwise <see langword="null"/>, if there are no more steps.</returns>
-		IStep GetNextStep();
+		int Position { get; set; }
 	}
 }

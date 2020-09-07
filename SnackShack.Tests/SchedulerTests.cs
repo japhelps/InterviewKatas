@@ -21,9 +21,9 @@ namespace SnackShack.Tests
                 new SandwichOrder(TimeSpan.Zero),
             };
 
-            IScheduler scheduler = new Scheduler(1);
+            IScheduler scheduler = new Scheduler(100);
 
-            var schedule = scheduler.Create(orders);
+            var schedule = scheduler.Create();
 
             Assert.NotNull(schedule);
             Assert.IsType<Schedule>(schedule);

@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using SnackShack.Api;
 using SnackShack.Api.Data;
+using SnackShack.Model.Steps;
 
 namespace SnackShack.Model
 {
@@ -43,45 +45,88 @@ namespace SnackShack.Model
         public ISchedule Create()
         {
             var tasks = new List<Task>();
-
-            var grouped = orders.GroupBy(x => new { x.Placed, x.Item })
-                .Select(x => new { Placed = x.Key.Placed, Type = x.Key.Item, Orders = x.ToList() })
-                .ToList();
+            var bins = BuildBins(this.OrdersInternal);
 
             var currentTime = TimeSpan.Zero;
             var builder = new StringBuilder();
-            foreach (var order in orders)
+            foreach (var bin in bins)
             {
-                while (!order.StepsComplete)
+                builder.Clear();
+                var placedOrders = bin.Items.Where(x => x.Step is PlaceOrderStep)
+                    .GroupBy(x => new { Type = x.Order.Item, OrderStep = x })
+                    .Select(x => new { Type = x.Key.Type, OrderSteps = x.ToList() });
+                if (placedOrders.Count() > 0)
                 {
-                    builder.Clear();
-                    if (grouped.Any(x => x.Placed == currentTime))
-                    {
-                        var ordersMadeDescription = grouped.Where(x => x.Placed == currentTime)
-                            .Select(x => $"{x.Orders.Count} {x.Type} orders placed")
-                            .Aggregate((s1, s2) => $"{s1}, {s2}");
-                        builder.Append(ordersMadeDescription);
-                    }
+                    var description = placedOrders.Select(x => $"{x.OrderSteps.Count} {x.Type} orders placed")
+                        .Aggregate((s1, s2) => $"{s1}, {s2}");
 
+                    builder.Append(description);
+                }
+
+                var nonOrderSteps = bin.Items.Where(x => !(x.Step is PlaceOrderStep))
+                    .Select(x => x.Description);
+                if(nonOrderSteps.Count() > 0)
+                {
                     if (builder.Length > 0)
                         builder.Append(", ");
 
-                    var step = order.GetNextStep();
-
-                    builder.Append(step.Name);
-                    tasks.Add(new Task(builder.ToString(), currentTime));
-
-                    currentTime = currentTime.Add(step.TimeToComplete);
+                    var description = nonOrderSteps.Aggregate((s1, s2) => $"{s1}, {s2}");
+                    builder.Append(description);
                 }
+
+                tasks.Add(new Task(builder.ToString(), currentTime));
+                currentTime = currentTime.Add(bin.TimeUsed);
             }
 
             tasks.Add(new Task(FINAL_TASK_NAME, currentTime));
             return new Schedule(tasks);
         }
 
+        ///// <inheritdoc/>
+        //public ISchedule Create()
+        //{
+        //    var tasks = new List<Task>();
+
+        //    var grouped = this.OrdersInternal.GroupBy(x => new { x.Placed, x.Item })
+        //        .Select(x => new { Placed = x.Key.Placed, Type = x.Key.Item, Orders = x.ToList() })
+        //        .ToList();
+
+        //    var currentTime = TimeSpan.Zero;
+        //    var builder = new StringBuilder();
+        //    foreach (var order in this.OrdersInternal)
+        //    {
+        //        while (!order.StepsComplete)
+        //        {
+        //            builder.Clear();
+        //            if (grouped.Any(x => x.Placed == currentTime))
+        //            {
+        //                var ordersMadeDescription = grouped.Where(x => x.Placed == currentTime)
+        //                    .Select(x => $"{x.Orders.Count} {x.Type} orders placed")
+        //                    .Aggregate((s1, s2) => $"{s1}, {s2}");
+        //                builder.Append(ordersMadeDescription);
+        //            }
+
+        //            if (builder.Length > 0)
+        //                builder.Append(", ");
+
+        //            var step = order.GetNextStep();
+
+        //            builder.Append(step.Name);
+        //            tasks.Add(new Task(builder.ToString(), currentTime));
+
+        //            currentTime = currentTime.Add(step.TimeToComplete);
+        //        }
+        //    }
+
+        //    tasks.Add(new Task(FINAL_TASK_NAME, currentTime));
+        //    return new Schedule(tasks);
+        //}
+
         /// <inheritdoc/>
         public void Add(IOrder order)
         {
+            order.Position = GetOrderPosition(order);
+
             var waitTime = TimeSpan.FromMinutes(5);
             var estimate = MakeEstimate(order);
             if (estimate > waitTime)
@@ -138,6 +183,11 @@ namespace SnackShack.Model
             }
 
             return bins;
+        }
+
+        private int GetOrderPosition(IOrder order)
+        {
+            return this.OrdersInternal.Count(x => x.Item == order.Item) + 1;
         }
         #endregion
     }

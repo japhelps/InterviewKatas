@@ -14,24 +14,12 @@ namespace SnackShack.Model
 
         public SandwichOrder(TimeSpan placed)
             : base(placed)
-        {
-            
+        {            
         }
 
         public override string Item => "sandwich";
 
-        public override IReadOnlyCollection<IStep> Steps
-        {
-            get
-            {
-                if (this.steps == null)
-                    this.steps = BuildSteps2();
-
-                return this.steps;
-            }
-        }
-
-        private List<IStep> BuildSteps2()
+        protected override List<IStep> BuildSteps()
         {
             return new List<IStep>()
             {
@@ -39,16 +27,6 @@ namespace SnackShack.Model
                 new MakeStep(this.Item, TimeSpan.FromMinutes(1)),
                 new ServeStep(this.Item, TimeSpan.FromSeconds(30)),
             };
-        }
-
-        protected override Queue<IStep> BuildSteps()
-        {
-            var steps = new Queue<IStep>();
-            steps.Enqueue(new PlaceOrderStep(this.Item));
-            steps.Enqueue(new MakeStep(this.Item, TimeSpan.FromMinutes(1)));
-            steps.Enqueue(new ServeStep(this.Item, TimeSpan.FromSeconds(30)));
-
-            return steps;
         }
     }
 }

@@ -12,7 +12,7 @@ namespace SnackShack.Model
     public abstract class OrderBase : IOrder
     {
         #region Private Members
-        private Queue<IStep> steps;
+        private List<IStep> steps;
         #endregion
 
         #region Constructors
@@ -36,19 +36,14 @@ namespace SnackShack.Model
         public TimeSpan Placed { get; }
 
         /// <inheritdoc/>
-        public abstract IReadOnlyCollection<IStep> Steps { get; }
+        public IReadOnlyCollection<IStep> Steps => this.steps;
 
         /// <inheritdoc/>
-        public bool StepsComplete => this.steps.Count == 0;
-        #endregion
-
-        #region Public Methods
-        /// <inheritdoc/>
-        public IStep GetNextStep() => this.steps.Dequeue();
+        public int Position { get; set; }
         #endregion
 
         #region Protected Methods
-        protected abstract Queue<IStep> BuildSteps();
+        protected abstract List<IStep> BuildSteps();
         #endregion
     }
 }
