@@ -16,5 +16,12 @@ namespace SnackShack.Api
 		/// <param name="orders">The orders from which to create a schedule.</param>
 		/// <returns>A schedule of work items.</returns>
 		ISchedule Create(IEnumerable<IOrder> orders);
+
+		/// <summary>
+		/// Places an order.
+		/// </summary>
+		/// <param name="order">The order to be placed.</param>
+		/// <returns>The estimated time of completion of the order.</returns>
+		TimeSpan Add(IOrder order);
 	}
 }
