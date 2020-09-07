@@ -20,6 +20,11 @@ namespace SnackShack.Api.Data
 		TimeSpan Placed { get; }
 
 		/// <summary>
+		/// Gets the steps needed to complete the order.
+		/// </summary>
+		IReadOnlyCollection<IStep> Steps { get; }
+
+		/// <summary>
 		/// Gets whether the production of the order is finished.
 		/// </summary>
 		bool StepsComplete { get; }

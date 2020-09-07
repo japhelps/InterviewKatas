@@ -38,5 +38,47 @@ namespace SnackShack.Tests
                 x => Assert.Equal("05:30 serve sandwich 4", x.Name),
                 x => Assert.Equal("06:00 take a well earned break.", x.Name));
         }
+
+        [Fact]
+        public void CanAddOrders()
+        {
+            var o1 = new SandwichOrder(TimeSpan.Zero);
+            var o2 = new SandwichOrder(TimeSpan.Zero);
+            var o3 = new SandwichOrder(TimeSpan.Zero);
+            var orders = new List<IOrder>() { o1, o2, o3 };
+
+            IScheduler scheduler = new Scheduler(100);
+
+            foreach (var order in orders)
+                scheduler.Add(order);
+
+            Assert.True(scheduler.Orders.Count > 0);
+            Assert.Equal(3, scheduler.Orders.Count);
+            Assert.Collection(scheduler.Orders,
+                x => Assert.Equal(o1, x),
+                x => Assert.Equal(o2, x),
+                x => Assert.Equal(o3, x));
+        }
+
+        [Fact]
+        public void AddingTooManyOrdersThrowWaitTimeException()
+        {
+            var o1 = new SandwichOrder(TimeSpan.Zero);
+            var o2 = new SandwichOrder(TimeSpan.Zero);
+            var o3 = new SandwichOrder(TimeSpan.Zero);
+            var o4 = new SandwichOrder(TimeSpan.Zero);
+            var orders = new List<IOrder>() { o1, o2, o3, o4 };
+
+            IScheduler scheduler = new Scheduler(100);
+
+            var ex = Record.Exception(() =>
+            {
+                foreach (var order in orders)
+                    scheduler.Add(order);
+            });
+
+            Assert.NotNull(ex);
+            Assert.IsType<WaitTimeTooLongException>(ex);
+        }
     }
 }

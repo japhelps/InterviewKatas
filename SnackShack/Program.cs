@@ -20,7 +20,7 @@ namespace SnackShack
 
                 var orders = command.Execute();
 
-                var scheduler = new Scheduler(0);
+                var scheduler = new Scheduler(100);
 
                 var schedule = scheduler.Create(orders);
 

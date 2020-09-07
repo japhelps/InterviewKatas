@@ -20,6 +20,10 @@ namespace SnackShack.Model
         #endregion
 
         #region Constructors
+        /// <summary>
+        /// Creates an instance of a schedule builder.
+        /// </summary>
+        /// <param name="binCapacity">The capacity of the bins for scheduling.</param>
         public Scheduler(int binCapacity)
         {
             if (binCapacity <= 0)
@@ -27,6 +31,11 @@ namespace SnackShack.Model
 
             this.binCapacity = binCapacity;
         }
+        #endregion
+
+        #region Public Properties
+        /// <inheritdoc/>
+        public IReadOnlyList<IOrder> Orders => this.OrdersInternal;
         #endregion
 
         #region Public Methods
@@ -71,66 +80,65 @@ namespace SnackShack.Model
         }
 
         /// <inheritdoc/>
-        public TimeSpan Add(IOrder order)
+        public void Add(IOrder order)
         {
-            throw new NotImplementedException();
+            var waitTime = TimeSpan.FromMinutes(5);
+            var estimate = MakeEstimate(order);
+            if (estimate > waitTime)
+                throw new WaitTimeTooLongException($"Unable to complete order in {waitTime:m\\:ss} minutes.  Estimated completion time: {estimate:m\\:ss} minutes.");
+
+            this.OrdersInternal.Add(order);
         }
         #endregion
 
         #region Private Properties
-        private List<IOrder> Orders { get; } = new List<IOrder>();
-        //private List<Bin> Bins { get; } = new List<Bin>();
+        private List<IOrder> OrdersInternal { get; } = new List<IOrder>();
         #endregion
 
         #region Private Methods
         private TimeSpan MakeEstimate(IOrder order)
         {
-            throw new NotImplementedException();
+            var estimateOrders = new List<IOrder>();
+            estimateOrders.AddRange(this.OrdersInternal);
+            estimateOrders.Add(order);
+
+            var bins = BuildBins(estimateOrders);
+
+            var binListForOrder = bins.SkipWhile(x => !x.Contains(order, order.Steps.First()))
+                .TakeUntil(x => x.Contains(order, order.Steps.Last()));
+
+            return binListForOrder.Aggregate(TimeSpan.Zero, (ts, b) => ts.Add(b.TimeUsed));
         }
 
-        //private List<Bin> EstimateBins(IOrder order)
-        //{
-        //    var estimateBins = new List<Bin>();
-        //    estimateBins.AddRange(this.Bins);
+        private List<Bin> BuildBins(List<IOrder> orders)
+        {
+            var bins = new List<Bin>();
 
-        //    estimateBins = AddOrderToBins(order, estimateBins);
+            var orderList = orders.SelectMany(x => x.Steps, (o, s) => new OrderStep(o, s))
+                .OrderBy(x => x.Order.Placed)
+                .ThenBy(x => x.Step.Weight)
+                .ToList();
 
+            foreach (var order in orderList)
+            {
+                var added = false;
+                foreach (var bin in bins)
+                {
+                    added = bin.TryAdd(order);
+                    if (added)
+                        break;
+                }
 
-        //}
+                if(!added)
+                {
+                    var bin = new Bin(this.binCapacity);
+                    bin.TryAdd(order);
+                    bins.Add(bin);
+                }
+            }
 
-    //    private List<Bin> AddOrderToBins(IOrder order, List<Bin> bins)
-    //    {
-    //        while(!order.Item.StepsComplete)
-    //        {
-    //            var step = order.Item.GetNextStep();
-
-    //            var binPosition = 0;
-    //            Bin newBin = null;
-    //            foreach (var bin in bins)
-    //            {
-    //                var result = bin.TryAdd(step);
-    //                if (result.Added)
-    //                {
-    //                    newBin = result.Bin;
-    //                    break;
-    //                }
-
-    //                binPosition++;
-    //            }
-
-    //            if (newBin == null)
-    //            {
-    //                newBin = new Bin(this.binCapacity, step);
-    //                bins.Add(newBin);
-    //            }
-    //            else
-    //            {
-    //                bins[binPosition] = newBin;
-    //            }
-    //        }
-
-    //        return bins;
-    //    }
+            return bins;
+        }
         #endregion
     }
 }

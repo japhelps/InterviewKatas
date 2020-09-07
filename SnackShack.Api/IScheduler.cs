@@ -22,6 +22,11 @@ namespace SnackShack.Api
 		/// </summary>
 		/// <param name="order">The order to be placed.</param>
 		/// <returns>The estimated time of completion of the order.</returns>
-		TimeSpan Add(IOrder order);
+		void Add(IOrder order);
+
+		/// <summary>
+		/// Gets a read only list of the current orders.
+		/// </summary>
+		IReadOnlyList<IOrder> Orders { get; }
 	}
 }

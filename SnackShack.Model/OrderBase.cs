@@ -31,8 +31,13 @@ namespace SnackShack.Model
         #region Public Properties
         /// <inheritdoc/>
         public abstract string Item { get; }
+
         /// <inheritdoc/>
         public TimeSpan Placed { get; }
+
+        /// <inheritdoc/>
+        public abstract IReadOnlyCollection<IStep> Steps { get; }
+
         /// <inheritdoc/>
         public bool StepsComplete => this.steps.Count == 0;
         #endregion

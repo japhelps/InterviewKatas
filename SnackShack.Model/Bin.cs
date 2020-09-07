@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
@@ -12,7 +11,7 @@ namespace SnackShack.Model
     /// <summary>
     /// Represents scheduling bin to hold menu item production steps.
     /// </summary>
-    public class Bin
+    internal class Bin
     {
         #region Constructors
         /// <summary>
@@ -26,34 +25,6 @@ namespace SnackShack.Model
 
             this.Capacity = capacity;
         }
-
-        /// <summary>
-        /// Creates an instance of a bin to hold menu item production steps.
-        /// </summary>
-        /// <param name="capacity">The amount the bin can hold.</param>
-        /// <param name="item">The item to add.</param>
-        public Bin(int capacity, IStep item)
-        {
-            if (capacity <= 0)
-                throw new ArgumentOutOfRangeException(nameof(capacity), capacity, "Capacity must be greater than zero.");
-
-            this.Capacity = capacity;
-            this.Items = this.Items.Add(item);
-        }
-
-        /// <summary>
-        /// Creates an instance of the bin with the provided capacity and items.
-        /// </summary>
-        /// <param name="capacity">The amount the bin can hold.</param>
-        /// <param name="items">The items in the bin.</param>
-        private Bin(int capacity, IEnumerable<IStep> items)
-        {
-            if (capacity <= 0)
-                throw new ArgumentOutOfRangeException(nameof(capacity), capacity, "Capacity must be greater than zero.");
-
-            this.Capacity = capacity;
-            this.Items = this.Items.AddRange(items);
-        }
         #endregion
 
         #region Public Properties
@@ -64,12 +35,18 @@ namespace SnackShack.Model
         /// <summary>
         /// Gets the current capacity of the items being held.
         /// </summary>
-        public int CurrentCapacity => this.Items.Sum(x => x.Weight);
+        public int CurrentCapacity => this.Items.Sum(x => x.Step.Weight);
 
         /// <summary>
         /// Gets the amount of capacity remaining in the bin.
         /// </summary>
-        public int CapacityRemaining => this.Capacity - this.Items.Sum(x => x.Weight);
+        public int CapacityRemaining => this.Capacity - this.Items.Sum(x => x.Step.Weight);
+
+        /// <summary>
+        /// Gets the total time used in this bin.
+        /// </summary>
+        public TimeSpan TimeUsed => this.Items.Select(x => x.Step.TimeToComplete)
+            .Aggregate((ts1, ts2) => ts1.Add(ts2));
         #endregion
 
         #region Public Methods
@@ -78,18 +55,26 @@ namespace SnackShack.Model
         /// </summary>
         /// <param name="item">The item to add.</param>
         /// <returns>Returns <see langword="true"/> if the item is added to the bin. Otherwise <see langword="false"/>.</returns>
-        public (bool Added, Bin Bin) TryAdd(IStep item)
+        public bool TryAdd(OrderStep item)
         {
-            if (item.Weight > this.CapacityRemaining)
-                return (false, this);
+            if (item.Step.Weight > this.CapacityRemaining)
+                return false;
 
             this.Items.Add(item);
-            return (true, new Bin(this.Capacity, this.Items.Add(item)));
+            return true;
         }
+
+        /// <summary>
+        /// Determines whether a bin contains a specific order and order step.
+        /// </summary>
+        /// <param name="order">The order for which to check.</param>
+        /// <param name="step">The step for which to check.</param>
+        /// <returns><see langword="true"/> if the order and step are found, otherwise <see langword="false"/>.</returns>
+        public bool Contains(IOrder order, IStep step) => this.Items.Contains(new OrderStep(order, step));
         #endregion
 
         #region Private Properties
-        private ImmutableList<IStep> Items { get; } = ImmutableList<IStep>.Empty;
+        private List<OrderStep> Items { get; } = new List<OrderStep>();
         #endregion
     }
 }
