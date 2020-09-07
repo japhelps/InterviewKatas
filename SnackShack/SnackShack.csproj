@@ -5,4 +5,9 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SnackShack.Api\SnackShack.Api.csproj" />
+    <ProjectReference Include="..\SnackShack.Model\SnackShack.Model.csproj" />
+  </ItemGroup>
+
 </Project>
