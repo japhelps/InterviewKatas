@@ -22,13 +22,14 @@ namespace SnackShack.Model
         /// Creates an instance of a time slot to hold menu item production steps.
         /// </summary>
         /// <param name="capacity">The amount the time slot can hold.</param>
-        public TimeSlot(int capacity)
+        public TimeSlot(int capacity, TimeSpan start)
         {
             if (capacity <= 0)
                 throw new ArgumentOutOfRangeException(nameof(capacity), capacity, "Capacity must be greater than zero.");
 
             this.Capacity = capacity;
             this.items = new List<OrderStep>();
+            this.Start = start;
         }
         #endregion
 
@@ -57,6 +58,16 @@ namespace SnackShack.Model
         /// Gets the earliest placed time in the time slot.
         /// </summary>
         public TimeSpan Placed => this.items.Min(x => x.Order.Placed);
+
+        /// <summary>
+        /// Gets the start time for the time slot.
+        /// </summary>
+        public TimeSpan Start { get; }
+
+        /// <summary>
+        /// Gets the end time for the time slot.
+        /// </summary>
+        public TimeSpan End => this.Start.Add(this.TimeUsed);
 
         /// <summary>
         /// Gets the items in the time slot.

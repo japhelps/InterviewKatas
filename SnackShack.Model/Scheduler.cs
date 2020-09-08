@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using SnackShack.Api;
 using SnackShack.Api.Data;
@@ -104,10 +105,11 @@ namespace SnackShack.Model
             //We need all steps to determine a estimate
             var timeSlots = BuildTimeSlots(estimateOrders, x => true);
 
-            var timeSlotListForOrder = timeSlots.SkipWhile(x => !x.Contains(order, order.Steps.First()))
-                .TakeUntil(x => x.Contains(order, order.Steps.Last()));
+            var lastOrderTypeEndTime = timeSlots.Where(x => x.Contains(order, order.Steps.Last()))
+                .Select(x => x.End)
+                .Single();
 
-            return timeSlotListForOrder.Aggregate(TimeSpan.Zero, (ts, b) => ts.Add(b.TimeUsed));
+            return lastOrderTypeEndTime - order.Placed;
         }
 
         private List<TimeSlot> BuildTimeSlots(List<IOrder> orders, Func<OrderStep, bool> includeStep)
@@ -120,11 +122,12 @@ namespace SnackShack.Model
                 .ThenBy(x => x.Step.Weight)
                 .ToList();
 
+            var currentTime = TimeSpan.Zero;
             foreach (var orderStep in orderList)
             {
                 var added = false;
                 //Ensure items are only placed in time slots for after the order is placed.
-                foreach (var timeSlot in timeSlots.Where(x => x.Placed >= orderStep.Order.Placed))
+                foreach (var timeSlot in timeSlots.Where(x => x.Start >= currentTime))
                 {
                     added = timeSlot.TryAdd(orderStep);
                     if (added)
@@ -133,10 +136,12 @@ namespace SnackShack.Model
 
                 if(!added)
                 {
-                    var newTimeSlot = new TimeSlot(this.timeSlotCapacity);
+                    var newTimeSlot = new TimeSlot(this.timeSlotCapacity, currentTime);
                     newTimeSlot.TryAdd(orderStep);
                     timeSlots.Add(newTimeSlot);
                 }
+
+                currentTime = currentTime.Add(orderStep.Step.TimeToComplete);
             }
 
             return timeSlots;
