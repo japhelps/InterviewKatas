@@ -101,6 +101,7 @@ namespace SnackShack.Model
             estimateOrders.AddRange(this.OrdersInternal);
             estimateOrders.Add(order);
 
+            //We need all steps to determine a estimate
             var timeSlots = BuildTimeSlots(estimateOrders, x => true);
 
             var timeSlotListForOrder = timeSlots.SkipWhile(x => !x.Contains(order, order.Steps.First()))
@@ -122,6 +123,7 @@ namespace SnackShack.Model
             foreach (var orderStep in orderList)
             {
                 var added = false;
+                //Ensure items are only placed in time slots for after the order is placed.
                 foreach (var timeSlot in timeSlots.Where(x => x.Placed >= orderStep.Order.Placed))
                 {
                     added = timeSlot.TryAdd(orderStep);
