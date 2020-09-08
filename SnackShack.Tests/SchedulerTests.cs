@@ -87,12 +87,33 @@ namespace SnackShack.Tests
         }
 
         [Fact]
-        public void AddingTooManyOrdersThrowWaitTimeException()
+        public void AddingTooManyOrdersAtTheSameTimeThrowWaitTimeException()
         {
             var o1 = new SandwichOrder(TimeSpan.Zero);
             var o2 = new SandwichOrder(TimeSpan.Zero);
             var o3 = new SandwichOrder(TimeSpan.Zero);
             var o4 = new SandwichOrder(TimeSpan.Zero);
+            var orders = new List<IOrder>() { o1, o2, o3, o4 };
+
+            IScheduler scheduler = new Scheduler(100);
+
+            var ex = Record.Exception(() =>
+            {
+                foreach (var order in orders)
+                    scheduler.Add(order);
+            });
+
+            Assert.NotNull(ex);
+            Assert.IsType<WaitTimeTooLongException>(ex);
+        }
+
+        [Fact]
+        public void AddingTooManyOrdersCloseInTimeThrowWaitTimeException()
+        {
+            var o1 = new SandwichOrder(TimeSpan.Zero);
+            var o2 = new SandwichOrder(TimeSpan.Zero);
+            var o3 = new SandwichOrder(TimeSpan.Zero);
+            var o4 = new SandwichOrder(TimeSpan.FromSeconds(30));
             var orders = new List<IOrder>() { o1, o2, o3, o4 };
 
             IScheduler scheduler = new Scheduler(100);
