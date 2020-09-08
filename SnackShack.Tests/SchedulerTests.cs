@@ -30,7 +30,7 @@ namespace SnackShack.Tests
             Assert.Collection(schedule.Tasks,
                 x =>
                 {
-                    Assert.Equal($"{orders.Count} sandwich orders placed, Make sandwich 1", x.Name);
+                    Assert.Equal($"{orders.Count} sandwich order(s) placed, Make sandwich 1", x.Name);
                     Assert.Equal(TimeSpan.Zero, x.Start);
                 },
                 x =>
@@ -105,6 +105,77 @@ namespace SnackShack.Tests
 
             Assert.NotNull(ex);
             Assert.IsType<WaitTimeTooLongException>(ex);
+        }
+
+        [Fact]
+        public void AddingOrderInTheMiddleCreatesSchedule()
+        {
+            var orders = new List<IOrder>()
+            {
+                new SandwichOrder(TimeSpan.Zero),
+                new SandwichOrder(TimeSpan.Zero),
+                new SandwichOrder(TimeSpan.Zero),
+                new SandwichOrder(TimeSpan.FromMinutes(2)),
+            };
+
+            IScheduler scheduler = new Scheduler(100);
+            foreach (var order in orders)
+                scheduler.Add(order);
+            var schedule = scheduler.Create();
+
+            Assert.NotNull(schedule);
+            Assert.IsType<Schedule>(schedule);
+            Assert.Collection(schedule.Tasks,
+                x =>
+                {
+                    Assert.Equal($"{orders.Count - 1} sandwich order(s) placed, Make sandwich 1", x.Name);
+                    Assert.Equal(TimeSpan.Zero, x.Start);
+                },
+                x =>
+                {
+                    Assert.Equal("Serve sandwich 1", x.Name);
+                    Assert.Equal(TimeSpan.FromSeconds(1 * 60), x.Start);
+                },
+                x =>
+                {
+                    Assert.Equal("Make sandwich 2", x.Name);
+                    Assert.Equal(TimeSpan.FromSeconds(1 * 60 + 30), x.Start);
+                },
+                x =>
+                {
+                    Assert.Equal("1 sandwich order(s) placed", x.Name);
+                    Assert.Equal(TimeSpan.FromSeconds(2 * 60), x.Start);
+                },
+                x =>
+                {
+                    Assert.Equal("Serve sandwich 2", x.Name);
+                    Assert.Equal(TimeSpan.FromSeconds(2 * 60 + 30), x.Start);
+                },
+                x =>
+                {
+                    Assert.Equal("Make sandwich 3", x.Name);
+                    Assert.Equal(TimeSpan.FromSeconds(3 * 60), x.Start);
+                },
+                x =>
+                {
+                    Assert.Equal("Serve sandwich 3", x.Name);
+                    Assert.Equal(TimeSpan.FromSeconds(4 * 60), x.Start);
+                },
+                x =>
+                {
+                    Assert.Equal("Make sandwich 4", x.Name);
+                    Assert.Equal(TimeSpan.FromSeconds(4 * 60 + 30), x.Start);
+                },
+                x =>
+                {
+                    Assert.Equal("Serve sandwich 4", x.Name);
+                    Assert.Equal(TimeSpan.FromSeconds(5 * 60 + 30), x.Start);
+                },
+                x =>
+                {
+                    Assert.Equal("take a well earned break!", x.Name);
+                    Assert.Equal(TimeSpan.FromSeconds(6 * 60), x.Start);
+                });
         }
     }
 }

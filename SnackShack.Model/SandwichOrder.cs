@@ -8,10 +8,6 @@ namespace SnackShack.Model
 {
     public class SandwichOrder : OrderBase
     {
-        #region Private Members
-        private List<IStep> steps;
-        #endregion
-
         public SandwichOrder(TimeSpan placed)
             : base(placed)
         {            

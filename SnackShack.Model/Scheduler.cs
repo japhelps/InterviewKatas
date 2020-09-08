@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using SnackShack.Api;
 using SnackShack.Api.Data;
@@ -18,20 +15,20 @@ namespace SnackShack.Model
     {
         #region Private Members
         private const string FINAL_TASK_NAME = "take a well earned break!";
-        private readonly int binCapacity;
+        private readonly int timeSlotCapacity;
         #endregion
 
         #region Constructors
         /// <summary>
         /// Creates an instance of a schedule builder.
         /// </summary>
-        /// <param name="binCapacity">The capacity of the bins for scheduling.</param>
-        public Scheduler(int binCapacity)
+        /// <param name="timeSlotCapacity">The capacity of the time slots for scheduling.</param>
+        public Scheduler(int timeSlotCapacity)
         {
-            if (binCapacity <= 0)
-                throw new ArgumentOutOfRangeException(nameof(binCapacity), binCapacity, "The bin capacity must be greater than zero.");
+            if (timeSlotCapacity <= 0)
+                throw new ArgumentOutOfRangeException(nameof(timeSlotCapacity), timeSlotCapacity, "The time slot capacity must be greater than zero.");
 
-            this.binCapacity = binCapacity;
+            this.timeSlotCapacity = timeSlotCapacity;
         }
         #endregion
 
@@ -44,41 +41,38 @@ namespace SnackShack.Model
         /// <inheritdoc/>
         public ISchedule Create()
         {
-            var tasks = new List<Task>();
-            var bins = BuildBins(this.OrdersInternal);
+            var taskDescriptions = new Dictionary<TimeSpan, string>();
+            var ordersPlacedSlots = BuildOrdersPlacedSlots();
+
+            //Add the order task descriptions
+            foreach (var ordersPlaced in ordersPlacedSlots)
+                taskDescriptions.Add(ordersPlaced.Key, ordersPlaced.Value);
+
+            //Get the work item time slots
+            var timeSlots = BuildTimeSlots(this.OrdersInternal, x => !(x.Step is PlaceOrderStep));
 
             var currentTime = TimeSpan.Zero;
-            var builder = new StringBuilder();
-            foreach (var bin in bins)
+            foreach (var timeSlot in timeSlots)
             {
-                builder.Clear();
-                var placedOrders = bin.Items.Where(x => x.Step is PlaceOrderStep)
-                    .GroupBy(x => new { Type = x.Order.Item })
-                    .Select(x => new { Type = x.Key.Type, OrderSteps = x.ToList() });
-                if (placedOrders.Count() > 0)
+                foreach (var item in timeSlot.Items)
                 {
-                    var description = placedOrders.Select(x => $"{x.OrderSteps.Count} {x.Type} orders placed")
-                        .Aggregate((s1, s2) => $"{s1}, {s2}");
+                    if (taskDescriptions.TryGetValue(currentTime, out string description))
+                    {
+                        description = $"{description}, {item.Description}";
+                        taskDescriptions[currentTime] = description;
+                    }
+                    else
+                        taskDescriptions.Add(currentTime, item.Description);
 
-                    builder.Append(description);
+                    currentTime = currentTime.Add(item.Step.TimeToComplete);
                 }
-
-                var nonOrderSteps = bin.Items.Where(x => !(x.Step is PlaceOrderStep))
-                    .Select(x => x.Description);
-                if(nonOrderSteps.Count() > 0)
-                {
-                    if (builder.Length > 0)
-                        builder.Append(", ");
-
-                    var description = nonOrderSteps.Aggregate((s1, s2) => $"{s1}, {s2}");
-                    builder.Append(description);
-                }
-
-                tasks.Add(new Task(builder.ToString(), currentTime));
-                currentTime = currentTime.Add(bin.TimeUsed);
             }
 
-            tasks.Add(new Task(FINAL_TASK_NAME, currentTime));
+            taskDescriptions.Add(currentTime, FINAL_TASK_NAME);
+
+            var tasks = taskDescriptions.Select(x => new Task(x.Value, x.Key))
+                .OrderBy(x => x.Start)
+                .ToList();
             return new Schedule(tasks);
         }
 
@@ -107,47 +101,80 @@ namespace SnackShack.Model
             estimateOrders.AddRange(this.OrdersInternal);
             estimateOrders.Add(order);
 
-            var bins = BuildBins(estimateOrders);
+            var timeSlots = BuildTimeSlots(estimateOrders, x => true);
 
-            var binListForOrder = bins.SkipWhile(x => !x.Contains(order, order.Steps.First()))
+            var timeSlotListForOrder = timeSlots.SkipWhile(x => !x.Contains(order, order.Steps.First()))
                 .TakeUntil(x => x.Contains(order, order.Steps.Last()));
 
-            return binListForOrder.Aggregate(TimeSpan.Zero, (ts, b) => ts.Add(b.TimeUsed));
+            return timeSlotListForOrder.Aggregate(TimeSpan.Zero, (ts, b) => ts.Add(b.TimeUsed));
         }
 
-        private List<Bin> BuildBins(List<IOrder> orders)
+        private List<TimeSlot> BuildTimeSlots(List<IOrder> orders, Func<OrderStep, bool> includeStep)
         {
-            var bins = new List<Bin>();
-
+            var timeSlots = new List<TimeSlot>();
+            
             var orderList = orders.SelectMany(x => x.Steps, (o, s) => new OrderStep(o, s))
+                .Where(x => includeStep(x))
                 .OrderBy(x => x.Order.Placed)
                 .ThenBy(x => x.Step.Weight)
                 .ToList();
 
-            foreach (var order in orderList)
+            foreach (var orderStep in orderList)
             {
                 var added = false;
-                foreach (var bin in bins)
+                foreach (var timeSlot in timeSlots.Where(x => x.Placed >= orderStep.Order.Placed))
                 {
-                    added = bin.TryAdd(order);
+                    added = timeSlot.TryAdd(orderStep);
                     if (added)
                         break;
                 }
 
                 if(!added)
                 {
-                    var bin = new Bin(this.binCapacity);
-                    bin.TryAdd(order);
-                    bins.Add(bin);
+                    var newTimeSlot = new TimeSlot(this.timeSlotCapacity);
+                    newTimeSlot.TryAdd(orderStep);
+                    timeSlots.Add(newTimeSlot);
                 }
             }
 
-            return bins;
+            return timeSlots;
+        }
+
+        private Dictionary<TimeSpan, string> BuildOrdersPlacedSlots()
+        {
+            var placedItemOrders = this.OrdersInternal.GroupBy(x => new { Placed = x.Placed, x.Item })
+                .Select(x => new { Placed = x.Key.Placed, Value = $"{x.ToList().Count} {x.Key.Item} order(s) placed" })
+                .ToList();
+
+            var placedOrders = new Dictionary<TimeSpan, string>();
+
+            foreach (var itemOrder in placedItemOrders)
+            {
+                if (placedOrders.TryGetValue(itemOrder.Placed, out string value))
+                    placedOrders[itemOrder.Placed] = $"{value}, {itemOrder.Value}";
+                else
+                    placedOrders.Add(itemOrder.Placed, itemOrder.Value);
+            }
+
+            return placedOrders;
         }
 
         private int GetOrderPosition(IOrder order)
         {
-            return this.OrdersInternal.Count(x => x.Item == order.Item) + 1;
+            //The first order
+            if (this.OrdersInternal.Count == 0)
+                return 1;
+
+            //Placing an order at the end.
+            if(order.Placed >= this.OrdersInternal.Where(x => x.Item == order.Item).Max(x => x.Placed))
+                return this.OrdersInternal.Count(x => x.Item == order.Item) + 1;
+            else //Placing an order in the middle.  Fix all the positions and return the correct position
+            {
+                foreach (var fixOrder in this.OrdersInternal.Where(x => x.Item == order.Item && x.Placed > order.Placed))
+                    fixOrder.Position = fixOrder.Position + 1;
+
+                return this.OrdersInternal.Count(x => x.Item == order.Item && x.Placed <= order.Placed) + 1;
+            }
         }
         #endregion
     }

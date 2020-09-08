@@ -9,9 +9,9 @@ using SnackShack.Api.Data;
 namespace SnackShack.Model
 {
     /// <summary>
-    /// Represents scheduling bin to hold menu item production steps.
+    /// Represents scheduling time slot to hold menu item production steps.
     /// </summary>
-    internal class Bin
+    internal class TimeSlot
     {
         #region Private Members
         private List<OrderStep> items;
@@ -19,10 +19,10 @@ namespace SnackShack.Model
 
         #region Constructors
         /// <summary>
-        /// Creates an instance of a bin to hold menu item production steps.
+        /// Creates an instance of a time slot to hold menu item production steps.
         /// </summary>
-        /// <param name="capacity">The amount the bin can hold.</param>
-        public Bin(int capacity)
+        /// <param name="capacity">The amount the time slot can hold.</param>
+        public TimeSlot(int capacity)
         {
             if (capacity <= 0)
                 throw new ArgumentOutOfRangeException(nameof(capacity), capacity, "Capacity must be greater than zero.");
@@ -34,7 +34,7 @@ namespace SnackShack.Model
 
         #region Public Properties
         /// <summary>
-        /// Gets the total capacity of the bin.
+        /// Gets the total capacity of the time slot.
         /// </summary>
         public int Capacity { get; }
         /// <summary>
@@ -43,28 +43,33 @@ namespace SnackShack.Model
         public int CurrentCapacity => this.items.Sum(x => x.Step.Weight);
 
         /// <summary>
-        /// Gets the amount of capacity remaining in the bin.
+        /// Gets the amount of capacity remaining in the time slot.
         /// </summary>
-        public int CapacityRemaining => this.Capacity - this.items.Sum(x => x.Step.Weight);
+        public int CapacityRemaining => this.Capacity - this.CurrentCapacity;
 
         /// <summary>
-        /// Gets the total time used in this bin.
+        /// Gets the total time used in this time slot.
         /// </summary>
         public TimeSpan TimeUsed => this.items.Select(x => x.Step.TimeToComplete)
             .Aggregate((ts1, ts2) => ts1.Add(ts2));
 
         /// <summary>
-        /// Gets the items in the bin.
+        /// Gets the earliest placed time in the time slot.
+        /// </summary>
+        public TimeSpan Placed => this.items.Min(x => x.Order.Placed);
+
+        /// <summary>
+        /// Gets the items in the time slot.
         /// </summary>
         public IReadOnlyList<OrderStep> Items => this.items;
         #endregion
 
         #region Public Methods
         /// <summary>
-        /// Attempts to add the item to the bin.
+        /// Attempts to add the item to the time slot.
         /// </summary>
         /// <param name="item">The item to add.</param>
-        /// <returns>Returns <see langword="true"/> if the item is added to the bin. Otherwise <see langword="false"/>.</returns>
+        /// <returns>Returns <see langword="true"/> if the item is added to the time slot. Otherwise <see langword="false"/>.</returns>
         public bool TryAdd(OrderStep item)
         {
             if (item.Step.Weight > this.CapacityRemaining)
@@ -75,7 +80,7 @@ namespace SnackShack.Model
         }
 
         /// <summary>
-        /// Determines whether a bin contains a specific order and order step.
+        /// Determines whether a time slot contains a specific order and order step.
         /// </summary>
         /// <param name="order">The order for which to check.</param>
         /// <param name="step">The step for which to check.</param>

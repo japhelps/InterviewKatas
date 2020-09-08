@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using SnackShack.Api;
 using SnackShack.Api.Data;
-using SnackShack.Commands;
 using SnackShack.Model;
 
 namespace SnackShack
@@ -11,22 +11,14 @@ namespace SnackShack
     {
         static void Main(string[] args)
         {
+            IScheduler scheduler = new Scheduler(100);
+            IOrderFactory factory = new OrderFactory();
+
             try
             {
-                Console.WriteLine("Welcome to the Snack Shack!");
-                Console.WriteLine();
+                var app = new App(scheduler, factory);
 
-                var command = new GetOrdersCommand();
-
-                var orders = command.Execute();
-
-                var scheduler = new Scheduler(100);
-
-                var schedule = scheduler.Create();
-
-                Console.WriteLine();
-                DisplaySchedule(schedule);
-                Console.WriteLine();
+                app.Run();
             }
             catch (Exception ex)
             {
@@ -44,8 +36,7 @@ namespace SnackShack
         private static void DisplaySchedule(ISchedule schedule)
         {
             foreach (var task in schedule.Tasks)
-				Console.WriteLine("{0:mm\\:ss} {1}", task.Start, task.Name);
-                //Console.WriteLine$"{task.Start:mm\\\:ss} {task.Name}");
+                Console.WriteLine("{0:mm\\:ss} {1}", task.Start, task.Name);
         }
         #endregion
         #endregion
