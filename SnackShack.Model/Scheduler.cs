@@ -80,6 +80,9 @@ namespace SnackShack.Model
         /// <inheritdoc/>
         public void Add(IOrder order)
         {
+            if (this.OrdersInternal.Any(x => x.Placed > order.Placed))
+                throw new InvalidOperationException("Cannot place an order before an existing order.");
+
             order.Position = GetOrderPosition(order);
 
             var waitTime = TimeSpan.FromMinutes(5);

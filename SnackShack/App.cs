@@ -87,6 +87,12 @@ namespace SnackShack
                 Console.WriteLine();
                 result = false;
             }
+            catch (InvalidOperationException)
+            {
+                Console.WriteLine("I'm sorry! I can't fulfill your order due to time constraints.");
+                Console.WriteLine();
+                result = false;
+            }
 
             return result;
         }
