@@ -17,6 +17,7 @@ namespace SnackShack.Model
         #region Private Members
         private const string FINAL_TASK_NAME = "take a well earned break!";
         private readonly int timeSlotCapacity;
+        private readonly IInventory inventory;
         #endregion
 
         #region Constructors
@@ -24,12 +25,16 @@ namespace SnackShack.Model
         /// Creates an instance of a schedule builder.
         /// </summary>
         /// <param name="timeSlotCapacity">The capacity of the time slots for scheduling.</param>
-        public Scheduler(int timeSlotCapacity)
+        public Scheduler(int timeSlotCapacity, IInventory inventory)
         {
             if (timeSlotCapacity <= 0)
                 throw new ArgumentOutOfRangeException(nameof(timeSlotCapacity), timeSlotCapacity, "The time slot capacity must be greater than zero.");
 
+            if (inventory == null)
+                throw new ArgumentNullException(nameof(inventory));
+
             this.timeSlotCapacity = timeSlotCapacity;
+            this.inventory = inventory;
         }
         #endregion
 
@@ -82,6 +87,9 @@ namespace SnackShack.Model
         {
             if (this.OrdersInternal.Any(x => x.Placed > order.Placed))
                 throw new InvalidOperationException("Cannot place an order before an existing order.");
+
+            if (!this.inventory.HaveItem(order))
+                throw new SoldOutException($"{order.Item} is sold out.");
 
             order.Position = GetOrderPosition(order);
 

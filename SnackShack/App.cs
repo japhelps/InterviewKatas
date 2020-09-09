@@ -93,6 +93,12 @@ namespace SnackShack
                 Console.WriteLine();
                 result = false;
             }
+            catch (SoldOutException)
+            {
+                Console.WriteLine("I'm sorry! That item is sold out.");
+                Console.WriteLine();
+                result = false;
+            }
 
             return result;
         }

@@ -20,7 +20,7 @@ namespace SnackShack.Tests
                 new SandwichOrder(TimeSpan.Zero),
             };
 
-            IScheduler scheduler = new Scheduler(100);
+            IScheduler scheduler = new Scheduler(100, CreateInventory());
             foreach (var order in orders)
                 scheduler.Add(order);
             var schedule = scheduler.Create();
@@ -73,7 +73,7 @@ namespace SnackShack.Tests
             var o3 = new SandwichOrder(TimeSpan.Zero);
             var orders = new List<IOrder>() { o1, o2, o3 };
 
-            IScheduler scheduler = new Scheduler(100);
+            IScheduler scheduler = new Scheduler(100, CreateInventory());
 
             foreach (var order in orders)
                 scheduler.Add(order);
@@ -95,7 +95,7 @@ namespace SnackShack.Tests
             var o4 = new SandwichOrder(TimeSpan.Zero);
             var orders = new List<IOrder>() { o1, o2, o3, o4 };
 
-            IScheduler scheduler = new Scheduler(100);
+            IScheduler scheduler = new Scheduler(100, CreateInventory());
 
             var ex = Record.Exception(() =>
             {
@@ -116,7 +116,7 @@ namespace SnackShack.Tests
             var o4 = new SandwichOrder(TimeSpan.FromSeconds(30));
             var orders = new List<IOrder>() { o1, o2, o3, o4 };
 
-            IScheduler scheduler = new Scheduler(100);
+            IScheduler scheduler = new Scheduler(100, CreateInventory());
 
             var ex = Record.Exception(() =>
             {
@@ -139,7 +139,7 @@ namespace SnackShack.Tests
                 new SandwichOrder(TimeSpan.FromMinutes(2)),
             };
 
-            IScheduler scheduler = new Scheduler(100);
+            IScheduler scheduler = new Scheduler(100, CreateInventory());
             foreach (var order in orders)
                 scheduler.Add(order);
             var schedule = scheduler.Create();
@@ -198,5 +198,38 @@ namespace SnackShack.Tests
                     Assert.Equal(TimeSpan.FromSeconds(6 * 60), x.Start);
                 });
         }
+
+        [Fact]
+        public void OrderingTooManyItemsThrowsException()
+        {
+            var o1 = new SandwichOrder(TimeSpan.Zero);
+            var o2 = new SandwichOrder(TimeSpan.Zero);
+            var o3 = new SandwichOrder(TimeSpan.Zero);
+            var o4 = new SandwichOrder(TimeSpan.FromSeconds(120));
+            var orders = new List<IOrder>() { o1, o2, o3, o4 };
+
+            IScheduler scheduler = new Scheduler(100, CreateInventory(3));
+
+            var ex = Record.Exception(() =>
+            {
+                foreach (var order in orders)
+                    scheduler.Add(order);
+            });
+
+            Assert.NotNull(ex);
+            Assert.IsType<SoldOutException>(ex);
+        }
+
+        #region Helper Methods
+        private IInventory CreateInventory()
+        {
+            return CreateInventory(45);
+        }
+
+        private IInventory CreateInventory(int sandwiches)
+        {
+            return new Inventory(sandwiches);
+        } 
+        #endregion
     }
 }

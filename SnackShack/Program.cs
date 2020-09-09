@@ -11,7 +11,7 @@ namespace SnackShack
     {
         static void Main(string[] args)
         {
-            IScheduler scheduler = new Scheduler(100);
+            IScheduler scheduler = new Scheduler(100, new Inventory(45));
             IOrderFactory factory = new OrderFactory();
 
             try
